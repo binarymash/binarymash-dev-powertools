@@ -1,5 +1,5 @@
 function Register-Path {
-	Add-UserPath($PSScriptRoot)
+	Add-UserPath($PSScriptRoot)	
 }
 
 function Set-EnvironmentVariables {
