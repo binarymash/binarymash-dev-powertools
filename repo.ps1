@@ -11,7 +11,7 @@ if ($searchTerm -ne "") {
 if ($dir -eq $null) {
 	Write-Output "Cannot switch to $searchTerm"
 } else {
-	pushd $dir
+	pushd $dir.fullname
 }
 
 Remove-Module dev-powertools-core
