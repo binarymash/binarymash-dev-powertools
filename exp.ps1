@@ -2,7 +2,7 @@ param(
 	[string]$searchTerm
 )
 
-Import-Module $PSScriptRoot\dev-powertools-core.psm1
+Import-Module -DisableNameChecking $PSScriptRoot\dev-powertools-core.psm1
 
 function Open-Explorer {
 	Param([string]$path)
@@ -10,12 +10,15 @@ function Open-Explorer {
 	explorer $path
 }
 
-$dir = "."
+$path = "."
 
 if ($searchTerm -ne "") {
-	$dir = Get-Repo($searchTerm)
+	$dir = Get-Directory($searchTerm)
+	if ($dir){
+		$path = $dir.fullname
+	}
 }
 
-Open-Explorer($dir)
+Open-Explorer($path)
 
 Remove-Module dev-powertools-core

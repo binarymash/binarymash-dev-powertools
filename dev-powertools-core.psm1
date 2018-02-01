@@ -1,29 +1,5 @@
-function Get-Repo{
-	Param([string]$searchTerm)
-	
-	$baseDir = [Environment]::GetEnvironmentVariable("dpt-repo-dirs")	
-	$matchingDirs = Get-Repos($searchTerm)
-	
-	if($matchingDirs.Count -eq 0)
-	{
-		Write-Host "Didn't find anything to match $searchTerm"
-	} 
-	elseif($matchingDirs.Count -eq 1)
-	{
-		$matchingDirs[0]
-	}
-	else
-	{
-		Write-Host "There are multiple matching matches:"
-		$global:index = 0
-		Write-Host ($matchingDirs | format-table -Property @{name="Index";expression={$global:index;$global:index+=1}},fullname | out-string)
-		$choice = Read-Host -Prompt 'Make your choice:'
-		$matchingDirs[$choice-1]
-	}
-}
-
-function Get-Repos{
-	Param([string]$searchTerm)
+function Get-Directories{
+	param([string]$searchTerm)
 
 	$baseDir = [Environment]::GetEnvironmentVariable("dpt-repo-dirs")
 
@@ -32,6 +8,45 @@ function Get-Repos{
 	}
 	
 	ls $baseDir *$searchTerm* -Directory
+}
+
+function Get-Directory{
+	param([string]$searchTerm)
+	
+	Select-Directory (Get-Directories $searchTerm)
+}
+
+function Get-GitRepos{
+	Param([string]$searchTerm)
+
+	Get-Directories $searchTerm | where {Is-GitRepo($_) -eq $True}
+}
+
+function Get-GitRepo{
+	param([string]$searchTerm)
+	
+	Select-Directory (Get-GitRepos $searchTerm)
+}
+
+function Select-Directory{
+	param($directories)
+
+	if($directories.Count -eq 0)
+	{
+		Write-Host "Didn't find anything to match $searchTerm"
+	} 
+	elseif($directories.Count -eq 1)
+	{
+		$directories[0]
+	}
+	else
+	{	
+		Write-Host "There are multiple matching matches:"
+		$global:index = 0
+		Write-Host ($directories | format-table -Property @{name="Index";expression={$global:index;$global:index+=1}},fullname | out-string)
+		$selection = Read-Host -Prompt 'Make your selection:'
+		$directories[$selection-1]
+	}
 }
 
 function Is-GitRepo{
@@ -78,8 +93,4 @@ function Get-GitDisplayStatus{
 	}
 }
 
-
-export-modulemember -function Get-Repo 
-export-modulemember -function Get-Repos 
-export-modulemember -function Get-GitStatus 
-export-modulemember -function Get-GitDisplayStatus
+export-modulemember -function *
