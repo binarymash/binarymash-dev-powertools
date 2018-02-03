@@ -1,5 +1,25 @@
-function Register-Path {
-	Add-UserPath($PSScriptRoot)	
+function Show-Splash {
+	Write-Host		
+	Write-Host "-----------------------------------------------------------------------------"
+	Write-Host "  Dev-Powertools"
+	Write-Host "  Repository: https://github.com/binarymash/dev-powertools"
+	Write-Host "  License: https://github.com/binarymash/dev-powertools/blob/master/LICENSE"
+	Write-Host "-----------------------------------------------------------------------------"
+	Write-Host	
+}
+
+function Install-Module {
+	$module = Get-Module "dev-powertools"
+	if(!$module){
+		Write-Host "- Module is not installed. To install, do one of the following:"
+		Write-Host
+		Write-Host "  1. Modify the PSModulePath environment variable to include $PSScriptRoot, or"
+		Write-Host "  2. Copy the dev-powertools folder into one of the following locations:"
+		Write-Host
+		$Env:PSModulePath -split ";" | % {Write-Host "    - $_"}
+		Write-Host
+		Write-Host "You'll need to estart your powershell session to pick up all of these changes!" -ForegroundColor Yellow
+	}
 }
 
 function Set-EnvironmentVariables {
@@ -40,23 +60,7 @@ function Install-PoshGit {
 	}
 }
 
-function Add-UserPath {            
-	Param([array]$pathToAdd)
-	$verifiedPathsToAdd = $Null
-	foreach($path in $pathToAdd) {
-		if($env:Path -like "*$path*") {
-		Write-Host "- $path already exists in PATH" }
-		else {
-			$verifiedPathsToAdd += ";$path"
-			Write-Host "-`$verifiedPathsToAdd updated to contain: $path"
-		}
-		if ($verifiedPathsToAdd -ne $null) {
-			Write-Host "- Adding $Path to PATH"
-			[Environment]::SetEnvironmentVariable("Path",$env:Path + $verifiedPathsToAdd,"User")            
-		}
-	}
-}
-
-Register-Path
+Show-Splash
 Set-EnvironmentVariables
 Install-PoshGit
+Install-Module
