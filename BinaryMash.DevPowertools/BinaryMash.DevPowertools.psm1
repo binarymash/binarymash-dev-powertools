@@ -15,7 +15,7 @@ function Get-Directories{
 
 	$baseDir = Get-BaseDirs
 	
-	ls $baseDir *$searchTerm* -Directory
+	Get-ChildItem $baseDir *$searchTerm* -Directory
 }
 
 function Get-Directory{
@@ -29,7 +29,7 @@ function Get-GitRepos{
 	[CmdletBinding()]	
 	param([string]$searchTerm)
 
-	Get-Directories $searchTerm | where {$(Test-IsGitRepo($_)) -eq $True}
+	Get-Directories $searchTerm | Where-Object {$(Test-IsGitRepo($_)) -eq $True}
 }
 
 function Get-GitRepo{
@@ -69,11 +69,11 @@ function Test-IsGitRepo{
 		$repo
 	)
 	process{
-		pushd $repo.fullname
+		Push-Location $repo.fullname
 		
 		$isRepo = test-path .git
 		
-		popd	
+		Pop-Location	
 		
 		$isRepo
 	}
@@ -89,7 +89,7 @@ function Get-GitStatus{
 	Write-Progress -Activity "Checking $repo" -Status " "  
 	$host.ui.RawUI.WindowTitle = $repo.fullname
 	
-	pushd $repo.fullname
+	Push-Location $repo.fullname
 	
 	if ($(Test-IsGitRepo($repo)) -eq $true) {		
 		(git fetch) 2>&1>$null
@@ -98,7 +98,7 @@ function Get-GitStatus{
 		Write-Output "invalid"
 	}
 	
-	popd
+	Pop-Location
 
 	if ($status -like '*Your branch is behind*') {
 		Write-Output "stale"
@@ -158,7 +158,7 @@ Searches for a registered folder whose name contains myRepo and, if found, repor
 	
 		if ($staleRepos.Count -ne 0){
 			Write-Host "The following repositories are out of date: "
-			$staleRepos | % {Write-Host $_}
+			$staleRepos | ForEach-Object {Write-Host $_}
 		} else {
 			Write-Host "There are no stale repositories"
 		}
@@ -231,14 +231,14 @@ function Open-RepoLocation {
 	)
 	
 	if ($searchTerm -eq "") {
-		Get-GitRepos | % {Write-Output $_.name}
+		Get-GitRepos | ForEach-Object {Write-Output $_.name}
 		
 	} else {
 		$dir = Get-GitRepo($searchTerm)
 		if ($dir -eq $null) {
 			Write-Output "Cannot switch to $searchTerm"
 		} else {
-			pushd $dir.fullname
+			Push-Location $dir.fullname
 		}
 	}
 }
