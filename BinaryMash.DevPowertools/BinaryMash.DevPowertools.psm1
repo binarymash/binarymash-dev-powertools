@@ -1,4 +1,5 @@
 function Get-BaseDirs{
+	[CmdletBinding()]
 	$baseDir = [Environment]::GetEnvironmentVariable("DPT_BASE_DIRS")
 
 	if ($baseDir -eq $null){
@@ -9,6 +10,7 @@ function Get-BaseDirs{
 }
 
 function Get-Directories{
+	[CmdletBinding()]
 	param([string]$searchTerm)
 
 	$baseDir = Get-BaseDirs
@@ -17,24 +19,28 @@ function Get-Directories{
 }
 
 function Get-Directory{
+	[CmdletBinding()]
 	param([string]$searchTerm)
 	
 	Select-Directory (Get-Directories $searchTerm)
 }
 
 function Get-GitRepos{
-	Param([string]$searchTerm)
+	[CmdletBinding()]	
+	param([string]$searchTerm)
 
-	Get-Directories $searchTerm | where {Test-IsGitRepo($_) -eq $True}
+	Get-Directories $searchTerm | where {$(Test-IsGitRepo($_)) -eq $True}
 }
 
 function Get-GitRepo{
+	[CmdletBinding()]	
 	param([string]$searchTerm)
 	
 	Select-Directory (Get-GitRepos $searchTerm)
 }
 
 function Select-Directory{
+	[CmdletBinding()]	
 	param($directories)
 
 	if($directories.Count -eq 0)
@@ -56,40 +62,44 @@ function Select-Directory{
 }
 
 function Test-IsGitRepo{
-	param([System.IO.DirectoryInfo]$repo)
-
-	pushd $repo.fullname
-	
-	$isRepo = test-path .git
-	
-	popd	
-	
-	Write-Output $isRepo
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory=$True)]
+		[System.IO.DirectoryInfo]
+		$repo
+	)
+	process{
+		pushd $repo.fullname
+		
+		$isRepo = test-path .git
+		
+		popd	
+		
+		$isRepo
+	}
 }
 
 function Get-GitStatus{
-	param([System.IO.DirectoryInfo]$repo)
-
+	[CmdletBinding()]	
+	param(
+		[Parameter(Mandatory=$True)]
+		[System.IO.DirectoryInfo]$repo
+	)
+	$status = ""
 	Write-Progress -Activity "Checking $repo" -Status " "  
 	$host.ui.RawUI.WindowTitle = $repo.fullname
 	
 	pushd $repo.fullname
 	
-	if (Test-IsGitRepo($repo) -eq $true) {		
+	if ($(Test-IsGitRepo($repo)) -eq $true) {		
 		(git fetch) 2>&1>$null
 		($status = git status) 2>&1>$null
 	} else {
-		Write-Host "$repo is not a git repo"
+		Write-Output "invalid"
 	}
 	
 	popd
-	
-	Write-Output $status		
-}
 
-function Get-GitDisplayStatus{
-	param([string]$status)
-	
 	if ($status -like '*Your branch is behind*') {
 		Write-Output "stale"
 	} elseif ($status -like '*up-to*date*'){
@@ -118,6 +128,7 @@ Searches for a registered folder whose name contains myRepo and, if found, repor
 stale myRepo
 Searches for a registered folder whose name contains myRepo and, if found, reports on whether it is out of date
 #>function Get-StaleGitRepos{
+	[CmdletBinding()]	
 	[Alias("stale")]
 	param(
 		[string]$searchTerm
@@ -129,12 +140,13 @@ Searches for a registered folder whose name contains myRepo and, if found, repor
 		$staleRepos = New-Object System.Collections.Generic.List[System.IO.DirectoryInfo]
 		foreach($repo in $repos){
 			$status = Get-GitStatus($repo)			
-			$displayStatus = Get-GitDisplayStatus($status)
-	
-			if ($displayStatus -eq "stale") {
+
+			if ($status -eq "stale") {
 				$staleRepos.Add($repo)
 			}		
-		}	
+		}
+
+		$staleRepos
 	}
 	
 	$repos = Get-GitRepos ($searchTerm)
@@ -169,6 +181,7 @@ exp myRepo
 Searches for a registered folder whose name contains myRepo and, if found, opens this location in the file explorer
 #>
 function Open-RepoExplorer {
+	[CmdletBinding()]	
 	[Alias("exp")]
 	param(
 		[string]$searchTerm
@@ -211,6 +224,7 @@ repo myRepo
 Searches for a registered folder whose name contains myRepo and, if found, opens this location
 #>
 function Open-RepoLocation {
+	[CmdletBinding()]	
 	[Alias("repo")]
 	param(
 		[string]$searchTerm
@@ -249,6 +263,7 @@ vsc myRepo
 Searches for a folder whose name contains myRepo and, if found, opens this folder in Visual Studio Code
 #>
 function Open-VsCode {
+	[CmdletBinding()]	
 	[Alias("vsc")]
 	param([string]$searchTerm)
 	$pathToOpen = $null
