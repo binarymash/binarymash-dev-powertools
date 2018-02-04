@@ -11,14 +11,14 @@ function Show-Splash {
 function Install-Module {
 	$module = Get-Module "dev-powertools"
 	if(!$module){
-		Write-Host "- Module is not installed. To install, do one of the following:"
+		Write-Host "- The BinaryMash.DevPowertools module is not yet installed. To install, do one of the following:"
 		Write-Host
 		Write-Host "  1. Modify the PSModulePath environment variable to include $PSScriptRoot, or"
 		Write-Host "  2. Copy the dev-powertools folder into one of the following locations:"
+		Write-Host "    - If you want to install just for the current user, copy to $home\Documents\WindowsPowerShell\Modules\"
+		Write-Host "    - If you want to install for all users, copy to $Env:ProgramFiles\WindowsPowerShell\Modules\"
 		Write-Host
-		$Env:PSModulePath -split ";" | % {Write-Host "    - $_"}
-		Write-Host
-		Write-Host "You'll need to estart your powershell session to pick up all of these changes!" -ForegroundColor Yellow
+		Write-Host "You'll need to restart your powershell session to pick up all of these changes!" -ForegroundColor Yellow
 	}
 }
 

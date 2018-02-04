@@ -19,7 +19,7 @@ function Get-Directory{
 function Get-GitRepos{
 	Param([string]$searchTerm)
 
-	Get-Directories $searchTerm | where {Is-GitRepo($_) -eq $True}
+	Get-Directories $searchTerm | where {Test-IsGitRepo($_) -eq $True}
 }
 
 function Get-GitRepo{
@@ -49,7 +49,7 @@ function Select-Directory{
 	}
 }
 
-function Is-GitRepo{
+function Test-IsGitRepo{
 	param([System.IO.DirectoryInfo]$repo)
 
 	pushd $repo.fullname
@@ -69,7 +69,7 @@ function Get-GitStatus{
 	
 	pushd $repo.fullname
 	
-	if (Is-GitRepo($repo) -eq $true) {		
+	if (Test-IsGitRepo($repo) -eq $true) {		
 		(git fetch) 2>&1>$null
 		($status = git status) 2>&1>$null
 	} else {
@@ -93,7 +93,25 @@ function Get-GitDisplayStatus{
 	}
 }
 
-function Get-StaleGitRepos{
+<#
+.DESCRIPTION
+Reports if repositories are out of date
+
+.PARAMETER searchTerm
+(Optional) A search term for the repository to analyse. 
+
+.EXAMPLE
+Get-StaleGitRepos
+For all registered git repos reports whether they are out of date
+
+.EXAMPLE
+Get-StaleGitRepos myRepo
+Searches for a registered folder whose name contains myRepo and, if found, reports on whether it is out of date
+
+.EXAMPLE
+stale myRepo
+Searches for a registered folder whose name contains myRepo and, if found, reports on whether it is out of date
+#>function Get-StaleGitRepos{
 	[Alias("stale")]
 	param(
 		[string]$searchTerm
@@ -129,6 +147,21 @@ function Get-StaleGitRepos{
 	}
 }
 
+<#
+.DESCRIPTION
+Opens the location of the specified folder in the file explorer
+
+.PARAMETER searchTerm
+A search term for the repository to open. 
+
+.EXAMPLE
+Open-RepoExplorer myRepo
+Searches for a registered folder whose name contains myRepo and, if found, opens this location in the file explorer
+
+.EXAMPLE
+exp myRepo
+Searches for a registered folder whose name contains myRepo and, if found, opens this location in the file explorer
+#>
 function Open-RepoExplorer {
 	[Alias("exp")]
 	param(
@@ -152,6 +185,25 @@ function Open-RepoExplorer {
 	}	
 }
 
+<#
+.DESCRIPTION
+Opens the location of the specified folder
+
+.PARAMETER searchTerm
+A search term for the repository to open. 
+
+.EXAMPLE
+Open-RepoLocation myRepo
+Searches for a registered folder whose name contains myRepo and, if found, opens this location
+
+.EXAMPLE
+Open-RepoLocation myRepo
+Searches for a registered folder whose name contains myRepo and, if found, opens this location
+
+.EXAMPLE
+repo myRepo
+Searches for a registered folder whose name contains myRepo and, if found, opens this location
+#>
 function Open-RepoLocation {
 	[Alias("repo")]
 	param(
@@ -171,10 +223,28 @@ function Open-RepoLocation {
 	}
 }
 
+<#
+.DESCRIPTION
+Launches Visual Studio Code, optionally opening the specified folder
+
+.PARAMETER searchTerm
+(Optional) A search term for the folder to open. 
+
+.EXAMPLE
+Open-VsCode
+Launches Visual Studio code but does not load any folder
+
+.EXAMPLE
+Open-VsCode myRepo
+Searches for a folder whose name contains myRepo and, if found, opens this folder in Visual Studio Code
+
+.EXAMPLE
+vsc myRepo
+Searches for a folder whose name contains myRepo and, if found, opens this folder in Visual Studio Code
+#>
 function Open-VsCode {
 	[Alias("vsc")]
 	param([string]$searchTerm)
-	Write-Host "hello!"
 	$pathToOpen = $null
 
 	if ($searchTerm -eq ""){
@@ -192,5 +262,3 @@ function Open-VsCode {
 		code $pathToOpen
 	}	
 }
-
-export-modulemember -function * -alias *
