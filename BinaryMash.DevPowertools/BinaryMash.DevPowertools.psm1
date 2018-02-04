@@ -9,6 +9,7 @@ function Get-BaseDirs{
 	Write-Output $baseDir
 }
 
+
 function Get-Directories{
 	[CmdletBinding()]
 	param([string]$searchTerm)
@@ -18,12 +19,14 @@ function Get-Directories{
 	Get-ChildItem $baseDir *$searchTerm* -Directory
 }
 
+
 function Get-Directory{
 	[CmdletBinding()]
 	param([string]$searchTerm)
 	
 	Select-Directory (Get-Directories $searchTerm)
 }
+
 
 function Get-GitRepos{
 	[CmdletBinding()]	
@@ -32,12 +35,14 @@ function Get-GitRepos{
 	Get-Directories $searchTerm | Where-Object {$(Test-IsGitRepo($_)) -eq $True}
 }
 
+
 function Get-GitRepo{
 	[CmdletBinding()]	
 	param([string]$searchTerm)
 	
 	Select-Directory (Get-GitRepos $searchTerm)
 }
+
 
 function Select-Directory{
 	[CmdletBinding()]	
@@ -61,6 +66,7 @@ function Select-Directory{
 	}
 }
 
+
 function Test-IsGitRepo{
 	[CmdletBinding()]
 	param(
@@ -78,6 +84,7 @@ function Test-IsGitRepo{
 		$isRepo
 	}
 }
+
 
 function Get-GitStatus{
 	[CmdletBinding()]	
@@ -109,6 +116,8 @@ function Get-GitStatus{
 	}
 }
 
+
+function Get-StaleGitRepos{
 <#
 .DESCRIPTION
 Reports if repositories are out of date
@@ -127,8 +136,8 @@ Searches for a registered folder whose name contains myRepo and, if found, repor
 .EXAMPLE
 stale myRepo
 Searches for a registered folder whose name contains myRepo and, if found, reports on whether it is out of date
-#>function Get-StaleGitRepos{
-	[CmdletBinding()]	
+#>
+[CmdletBinding()]	
 	[Alias("stale")]
 	param(
 		[string]$searchTerm
@@ -165,6 +174,8 @@ Searches for a registered folder whose name contains myRepo and, if found, repor
 	}
 }
 
+
+function Open-RepoExplorer {
 <#
 .DESCRIPTION
 Opens the location of the specified folder in the file explorer
@@ -180,7 +191,6 @@ Searches for a registered folder whose name contains myRepo and, if found, opens
 exp myRepo
 Searches for a registered folder whose name contains myRepo and, if found, opens this location in the file explorer
 #>
-function Open-RepoExplorer {
 	[CmdletBinding()]	
 	[Alias("exp")]
 	param(
@@ -204,6 +214,8 @@ function Open-RepoExplorer {
 	}	
 }
 
+
+function Open-RepoLocation {
 <#
 .DESCRIPTION
 Opens the location of the specified folder
@@ -223,7 +235,6 @@ Searches for a registered folder whose name contains myRepo and, if found, opens
 repo myRepo
 Searches for a registered folder whose name contains myRepo and, if found, opens this location
 #>
-function Open-RepoLocation {
 	[CmdletBinding()]	
 	[Alias("repo")]
 	param(
@@ -243,6 +254,8 @@ function Open-RepoLocation {
 	}
 }
 
+
+function Open-VsCode {
 <#
 .DESCRIPTION
 Launches Visual Studio Code, optionally opening the specified folder
@@ -262,7 +275,6 @@ Searches for a folder whose name contains myRepo and, if found, opens this folde
 vsc myRepo
 Searches for a folder whose name contains myRepo and, if found, opens this folder in Visual Studio Code
 #>
-function Open-VsCode {
 	[CmdletBinding()]	
 	[Alias("vsc")]
 	param([string]$searchTerm)
