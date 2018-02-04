@@ -2,7 +2,7 @@ function Get-BaseDirs{
 	[CmdletBinding()]
 	$baseDir = [Environment]::GetEnvironmentVariable("DPT_BASE_DIRS")
 
-	if ($baseDir -eq $null){
+	if ($baseDir -eq $null) {
 		throw "No repo directory is set... run install"
 	}
 	
@@ -12,70 +12,80 @@ function Get-BaseDirs{
 
 function Get-Directories{
 	[CmdletBinding()]
-	param([string]$searchTerm)
+	param (
+		[string]
+		$SearchTerm
+	)
 
 	$baseDir = Get-BaseDirs
 	
-	Get-ChildItem $baseDir *$searchTerm* -Directory
+	Get-ChildItem $baseDir *$SearchTerm* -Directory
 }
 
 
 function Get-Directory{
 	[CmdletBinding()]
-	param([string]$searchTerm)
+	param (
+		[string]
+		$SearchTerm
+	)
 	
-	Select-Directory (Get-Directories $searchTerm)
+	Select-Directory (Get-Directories $SearchTerm)
 }
 
 
 function Get-GitRepos{
 	[CmdletBinding()]	
-	param([string]$searchTerm)
+	param (
+		[string]
+		$SearchTerm)
 
-	Get-Directories $searchTerm | Where-Object {$(Test-IsGitRepo($_)) -eq $True}
+	Get-Directories $SearchTerm | Where-Object {$(Test-IsGitRepo($_)) -eq $True}
 }
 
 
 function Get-GitRepo{
 	[CmdletBinding()]	
-	param([string]$searchTerm)
+	param (
+		[string]
+		$SearchTerm
+	)
 	
-	Select-Directory (Get-GitRepos $searchTerm)
+	Select-Directory (Get-GitRepos $SearchTerm)
 }
 
 
 function Select-Directory{
 	[CmdletBinding()]	
-	param($directories)
+	param (
+		$Directories
+	)
 
-	if($directories.Count -eq 0)
-	{
+	if ($Directories.Count -eq 0) {
 		Write-Host "Didn't find anything to match $searchTerm"
 	} 
-	elseif($directories.Count -eq 1)
-	{
-		$directories[0]
+	elseif ($Directories.Count -eq 1) {
+		$Directories[0]
 	}
-	else
-	{	
+	else {	
 		Write-Host "There are multiple matching matches:"
 		$global:index = 0
-		Write-Host ($directories | format-table -Property @{name="Index";expression={$global:index;$global:index+=1}},fullname | out-string)
+		Write-Host ($Directories | format-table -Property @{name="Index";expression={$global:index;$global:index+=1}},fullname | out-string)
 		$selection = Read-Host -Prompt 'Make your selection:'
-		$directories[$selection-1]
+		$Directories[$selection-1]
 	}
 }
 
 
 function Test-IsGitRepo{
 	[CmdletBinding()]
-	param(
-		[Parameter(Mandatory=$True)]
+	param (
+		[Parameter (Mandatory = $True)]
 		[System.IO.DirectoryInfo]
-		$repo
+		$Repo
 	)
 	process{
-		Push-Location $repo.fullname
+		Push-Location $Repo.fullname
 		
 		$isRepo = test-path .git
 		
@@ -88,17 +98,18 @@ function Test-IsGitRepo{
 
 function Get-GitStatus{
 	[CmdletBinding()]	
-	param(
-		[Parameter(Mandatory=$True)]
-		[System.IO.DirectoryInfo]$repo
+	param (
+		[Parameter (Mandatory = $True)]
+		[System.IO.DirectoryInfo]
+		$Repo
 	)
 	$status = ""
-	Write-Progress -Activity "Checking $repo" -Status " "  
-	$host.ui.RawUI.WindowTitle = $repo.fullname
+	Write-Progress -Activity "Checking $Repo" -Status " "  
+	$host.ui.RawUI.WindowTitle = $Repo.fullname
 	
-	Push-Location $repo.fullname
+	Push-Location $Repo.fullname
 	
-	if ($(Test-IsGitRepo($repo)) -eq $true) {		
+	if ($(Test-IsGitRepo($Repo)) -eq $true) {		
 		(git fetch) 2>&1>$null
 		($status = git status) 2>&1>$null
 	} else {
@@ -109,7 +120,7 @@ function Get-GitStatus{
 
 	if ($status -like '*Your branch is behind*') {
 		Write-Output "stale"
-	} elseif ($status -like '*up-to*date*'){
+	} elseif ($status -like '*up-to*date*') {
 		Write-Output "up-to-date"
 	} else {
 		Write-Output "unknown"
@@ -122,7 +133,7 @@ function Get-StaleGitRepos{
 .DESCRIPTION
 Reports if repositories are out of date
 
-.PARAMETER searchTerm
+.PARAMETER SearchTerm
 (Optional) A search term for the repository to analyse. 
 
 .EXAMPLE
@@ -139,15 +150,16 @@ Searches for a registered folder whose name contains myRepo and, if found, repor
 #>
 [CmdletBinding()]	
 	[Alias("stale")]
-	param(
-		[string]$searchTerm
+	param (
+		[string]
+		$SearchTerm
 	)
 	function Get-StaleRepos()
 	{
 		param([System.Collections.Generic.List[System.IO.DirectoryInfo]]$repos)
 		
 		$staleRepos = New-Object System.Collections.Generic.List[System.IO.DirectoryInfo]
-		foreach($repo in $repos){
+		foreach($repo in $repos) {
 			$status = Get-GitStatus($repo)			
 
 			if ($status -eq "stale") {
@@ -158,14 +170,14 @@ Searches for a registered folder whose name contains myRepo and, if found, repor
 		$staleRepos
 	}
 	
-	$repos = Get-GitRepos ($searchTerm)
+	$repos = Get-GitRepos ($SearchTerm)
 	
 	if ($repos.Count -eq 0) {
 		Write-Output "No repos found"
 	} else {
 		$staleRepos = Get-StaleRepos($repos)
 	
-		if ($staleRepos.Count -ne 0){
+		if ($staleRepos.Count -ne 0) {
 			Write-Host "The following repositories are out of date: "
 			$staleRepos | ForEach-Object {Write-Host $_}
 		} else {
@@ -180,7 +192,7 @@ function Open-RepoExplorer {
 .DESCRIPTION
 Opens the location of the specified folder in the file explorer
 
-.PARAMETER searchTerm
+.PARAMETER SearchTerm
 A search term for the repository to open. 
 
 .EXAMPLE
@@ -193,22 +205,23 @@ Searches for a registered folder whose name contains myRepo and, if found, opens
 #>
 	[CmdletBinding()]	
 	[Alias("exp")]
-	param(
-		[string]$searchTerm
+	param (
+		[string]
+		$SearchTerm
 	)
 
 	$pathToOpen = $null
 
-	if ($searchTerm -eq ""){
+	if ($SearchTerm -eq "") {
 		$pathToOpen = "."
 	} else {
-		$dir = Get-Directory($searchTerm)
-		if ($dir){
+		$dir = Get-Directory($SearchTerm)
+		if ($dir) {
 			$pathToOpen = $dir.fullname
 		}
 	}
 
-	if($pathToOpen){
+	if ($pathToOpen) {
 		Write-Host "Opening explorer in $pathToOpen"
 		explorer $pathToOpen
 	}	
@@ -220,7 +233,7 @@ function Open-RepoLocation {
 .DESCRIPTION
 Opens the location of the specified folder
 
-.PARAMETER searchTerm
+.PARAMETER SearchTerm
 A search term for the repository to open. 
 
 .EXAMPLE
@@ -237,17 +250,18 @@ Searches for a registered folder whose name contains myRepo and, if found, opens
 #>
 	[CmdletBinding()]	
 	[Alias("repo")]
-	param(
-		[string]$searchTerm
+	param (
+		[string]
+		$SearchTerm
 	)
 	
-	if ($searchTerm -eq "") {
+	if ($SearchTerm -eq "") {
 		Get-GitRepos | ForEach-Object {Write-Output $_.name}
 		
 	} else {
-		$dir = Get-GitRepo($searchTerm)
+		$dir = Get-GitRepo($SearchTerm)
 		if ($dir -eq $null) {
-			Write-Output "Cannot switch to $searchTerm"
+			Write-Output "Cannot switch to $SearchTerm"
 		} else {
 			Push-Location $dir.fullname
 		}
@@ -260,7 +274,7 @@ function Open-VsCode {
 .DESCRIPTION
 Launches Visual Studio Code, optionally opening the specified folder
 
-.PARAMETER searchTerm
+.PARAMETER SearchTerm
 (Optional) A search term for the folder to open. 
 
 .EXAMPLE
@@ -277,20 +291,24 @@ Searches for a folder whose name contains myRepo and, if found, opens this folde
 #>
 	[CmdletBinding()]	
 	[Alias("vsc")]
-	param([string]$searchTerm)
+	param (
+		[string]
+		$SearchTerm
+	)
+	
 	$pathToOpen = $null
 
-	if ($searchTerm -eq ""){
+	if ($SearchTerm -eq "") {
 		$pathToOpen = "."	
 	}
 	else {
-		$dir = Get-Directory($searchTerm)
-		if ($dir){
+		$dir = Get-Directory($SearchTerm)
+		if ($dir) {
 			$pathToOpen = $dir.fullname	
 		}
 	}
 
-	if($pathToOpen) {
+	if ($pathToOpen) {
 		Write-Host "Opening Visual Studio Code in $pathToOpen"
 		code $pathToOpen
 	}	
