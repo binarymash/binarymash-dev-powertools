@@ -23,7 +23,7 @@ function Install-Module {
 }
 
 function Set-EnvironmentVariables {
-	Set-EnvironmentVariable(@('dpt-repo-dirs', 'Enter root directories that contain your repositories'))
+	Set-EnvironmentVariable(@('DPT_BASE_DIRS', 'Enter the base directory that contains your repositories'))
 }
 
 function Set-EnvironmentVariable {
@@ -50,13 +50,24 @@ function Install-PoshGit {
 	if (Get-Module -ListAvailable -Name posh-git) {
 		Write-Host "- posh-git is already installed."
 	} else {
-		Write-Host "- posh-git is not installed, so we'll install it now..."
-		(new-object Net.WebClient).DownloadString("http://psget.net/GetPsGet.ps1") | iex
-		install-module posh-git
-		if (!$?) {
-			throw "Failed to install posh-git"
-		}  
-		Write-Host "- Installed posh-git"
+		$poshGitChoice = $false
+
+		while(!$poshGitChoice){
+			$selection = $(Read-Host -Prompt '- posh-git is not installed. Do you want to install it? [Y|n]').ToLower()
+			if ($selection -in @("y","n","")){
+				$poshGitChoice = $true
+			}
+		}
+
+		if($selection -ne "n"){
+			Write-Host "Installing posh-git..."
+			(new-object Net.WebClient).DownloadString("http://psget.net/GetPsGet.ps1") | iex
+			install-module posh-git
+			if (!$?) {
+				throw "Failed to install posh-git"
+			}  
+			Write-Host "- Installed posh-git"	
+		}
 	}
 }
 

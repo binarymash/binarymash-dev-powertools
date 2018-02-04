@@ -1,11 +1,17 @@
-function Get-Directories{
-	param([string]$searchTerm)
-
-	$baseDir = [Environment]::GetEnvironmentVariable("dpt-repo-dirs")
+function Get-BaseDirs{
+	$baseDir = [Environment]::GetEnvironmentVariable("DPT_BASE_DIRS")
 
 	if ($baseDir -eq $null){
 		throw "No repo directory is set... run install"
 	}
+	
+	Write-Output $baseDir
+}
+
+function Get-Directories{
+	param([string]$searchTerm)
+
+	$baseDir = Get-BaseDirs
 	
 	ls $baseDir *$searchTerm* -Directory
 }
